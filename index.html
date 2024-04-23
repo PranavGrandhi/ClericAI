@@ -59,7 +59,7 @@
             };
 
             // Making an API POST request to submit the question and documents
-            fetch('your_url.com/submit_question_and_documents', {
+            fetch('http://127.0.0.1:8000/submit_question_and_documents/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -68,13 +68,40 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('resultArea').innerHTML = 'Processing... Check back soon!';
-                // Optionally set a timeout or interval to check the status
+                document.getElementById('resultArea').innerHTML = 'Received response: ' + JSON.stringify(data);
+                checkStatus();
             })
             .catch(error => {
                 console.error('Error:', error);
                 document.getElementById('resultArea').innerHTML = 'An error occurred.';
             });
+
+            function checkStatus() {
+                fetch('http://127.0.0.1:8000/get_question_and_facts/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'done') {
+                        displayFacts(data.facts);
+                    } else {
+                        setTimeout(checkStatus, 1); // Check every 2 seconds
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            function displayFacts(facts) {
+                if (facts.length > 0) {
+                    const list = document.createElement('ul');
+                    facts.forEach(fact => {
+                        const item = document.createElement('li');
+                        item.textContent = fact;
+                        list.appendChild(item);
+                    });
+                    document.getElementById('resultArea').appendChild(list);
+                } else {
+                    document.getElementById('resultArea').innerHTML = 'No facts found.';
+                }
+            }
         });
     </script>
 </body>

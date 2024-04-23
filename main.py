@@ -1,8 +1,18 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 
 app = FastAPI()
+
+# Add CORS middleware to allow connections from any origin
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 class DocumentSubmission(BaseModel):
     question: str
@@ -18,6 +28,7 @@ storage = {}
 
 @app.post("/submit_question_and_documents")
 async def submit_documents(submission: DocumentSubmission, background_tasks: BackgroundTasks):
+    print(submission)
     storage['question'] = submission.question
     storage['facts'] = []  # Initialize or clear previous facts
     storage['status'] = 'processing'
