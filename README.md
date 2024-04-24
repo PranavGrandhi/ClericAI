@@ -4,6 +4,8 @@ Index.html - Webpage where we can enter the question and the link to the logs. C
 
 main.py - FAST API backend to serve the requests from the webpage and call gpt4 to fetch the corresponsing facts.
 
+Here is my app link: https://dry-everglades-37545-c64d9afbc0ed.herokuapp.com/
+
 The following are the endpoints 
 
 POST https://dry-everglades-37545-c64d9afbc0ed.herokuapp.com/submit_question_and_documents
