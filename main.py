@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from openai import OpenAI
@@ -9,6 +11,8 @@ import requests
 app = FastAPI()
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Add CORS middleware to allow connections from any origin
 app.add_middleware(
@@ -68,6 +72,12 @@ async def process_documents_with_gpt4(question, documents):
     result = extract_facts_with_gpt4(question, documents)
     storage['facts'] = [result]
     storage['status'] = 'done'
+
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    with open(os.path.join('static', 'index.html'), 'r') as f:
+        html_content = f.read()
+    return HTMLResponse(content=html_content)
 
 @app.post("/submit_question_and_documents")
 async def submit_documents(submission: DocumentSubmission, background_tasks: BackgroundTasks):

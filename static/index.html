@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Log Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 10px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Call Log Information Extractor</h1>
+        <form id="logForm">
+            <label for="question">Enter your question:</label>
+            <textarea id="question" name="question" required></textarea>
+            <label for="urls">Enter call log URLs (one per line):</label>
+            <textarea id="urls" name="urls" required></textarea>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="resultArea"></div>
+    </div>
+
+    <script>
+        document.getElementById('logForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            const question = document.getElementById('question').value;
+            const urls = document.getElementById('urls').value.split('\n').filter(url => url.trim() !== '');
+
+            // Construct the API request payload
+            const payload = {
+                question: question,
+                documents: urls
+            };
+
+            // Making an API POST request to submit the question and documents
+            fetch('https://dry-everglades-37545-c64d9afbc0ed.herokuapp.com/submit_question_and_documents', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resultArea').innerHTML = 'Received response: ' + JSON.stringify(data);
+                checkStatus();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('resultArea').innerHTML = 'An error occurred.';
+            });
+
+            function checkStatus() {
+                fetch('https://dry-everglades-37545-c64d9afbc0ed.herokuapp.com/get_question_and_facts/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'done') {
+                        displayFacts(data.facts);
+                    } else {
+                        setTimeout(checkStatus, 2000); // Check every 2 seconds
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+
+            function displayFacts(facts) {
+                if (facts.length > 0) {
+                    const list = document.createElement('ul');
+                    facts.forEach(fact => {
+                        const item = document.createElement('li');
+                        item.textContent = fact;
+                        list.appendChild(item);
+                    });
+                    document.getElementById('resultArea').appendChild(list);
+                } else {
+                    document.getElementById('resultArea').innerHTML = 'No facts found.';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
