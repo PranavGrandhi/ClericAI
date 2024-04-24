@@ -8,7 +8,6 @@ import requests
 
 app = FastAPI()
 
-os.environ["OPENAI_API_KEY"] = "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"
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 # Add CORS middleware to allow connections from any origin
